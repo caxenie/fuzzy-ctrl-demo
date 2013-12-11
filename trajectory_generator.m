@@ -143,7 +143,7 @@ for g=1:length(P)-1
             
             if min(V(2,:))<-0.005
                 if g==1
-                    v_fin(g)=v_fin(g)-0.05
+                    v_fin(g)=v_fin(g)-0.05;
                     trajectory_generator(v_fin);
                     return;
                 elseif v_fin(g-1)>0.05 & v_fin(g-1) > v_fin(g)
@@ -262,7 +262,7 @@ ref_traj.yr     = KKK(:,2);
 ref_traj.thetar = KKK(:,3);
 
 % throw the data into a mat file as well 
-save(sprintf('reference_trajectory_data_%s.mat', ttype),'ref_traj');
+save(sprintf('reference_trajectory_data_%s.mat', ttype), 'ref_traj');
 
 % dlmwrite('xytheta_desired.txt',KKK,'coffset',1);
 fid = fopen(sprintf('reference_profile_%s.h', ttype),'wt');

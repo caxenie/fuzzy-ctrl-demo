@@ -1,5 +1,5 @@
-% CI Class Homework WSS2013-14 
-% Fuzzy Inference Systems
+%% CI Class Homework WSS2013-14 
+%% Fuzzy Inference Systems
 %
 % Trajectory tracking control for wheeled mobile robots in robot soccer
 % the coordinates are given in a 300x300 [cm] field
@@ -7,13 +7,21 @@
 % init
 clear all; close all; clc;
 
-% define the reference trajectory for the robot in the field
+% type of trajectory to track
 % types of trajectories 
-% {simple line, circle, oblique sine, line half loop, complex1, complex2}
-start_trajectory_generator;
+% {line, circle, sine, line_half_loop, complex1, complex2}
+tp = 'sine';
+% field size size x size
+field_size = 300;
 
-% load the generated reference trajectory 
-load('reference_trajectory_data_sine.mat');
+%% Define the reference trajectory for the robot in the field
+
+start_trajectory_generator(tp);
+
+%% Simulate Fuzzy Control for Trajectory Tracking
+
+%load the generated reference trajectory 
+load(sprintf('reference_trajectory_data_%s.mat', tp));
 
 % the control systems will use a TSK (Takagi-Sugeno-Kang FIS) such that the
 % output is already given as a crisp format, directly applicable to the
@@ -25,23 +33,26 @@ yr          = [ref_traj.yr];
 thetar      = [ref_traj.thetar]; 
 sim_time    = length(ref_traj.xr);
 
-
 % error vectors intialization 
 de      = zeros(1, sim_time);
 thetae  = zeros(1, sim_time);
 
 % fis params
-command_size = 2; % sends 2 voltage values for the 2 wheels
+command_size = 2; % sends 2 velocity values for the 2 wheels
 num_rules = 4;
 w = zeros(sim_time, num_rules);
 w_fin = zeros(sim_time, 1);
 
 % control signal sent to the robot actuators
-%   vl,vr - voltages to left/right motors
+%   vl,vr - velocities to left/right motors
 %   u = [vl;vr] or
 %   u(t,i) = [k_d(i)*de + k_t(i)*thetae; k_d(i)*de - k_t(i)*thetae];
-k_d = [0.25, 0.25, 0.8, 0.8];
-k_t = [0.125, 0.25, 0.125, 0.25];
+
+% Gains of low level P-Controllers
+k_d = [0.25, 0.25, 0.50, 0.50];
+k_t = [0.12, 0.25, 0.12, 0.25];
+
+% control signal
 u   = zeros(command_size, sim_time, num_rules);
 u_fin = zeros(command_size, sim_time, 1);
 
@@ -50,10 +61,10 @@ x       = zeros(sim_time, 1);
 y       = zeros(sim_time, 1);
 theta   = zeros(sim_time, 1);
 
-% start position 
-x(1)     = 120;
-y(1)     = 20;
-theta(1) = 45;
+% start position for the robot
+x(1)     = xr(1);
+y(1)     = yr(1);
+theta(1) = thetar(1);
 
 % robot params 
 R = 0.04;   % wheel radius [m]
@@ -71,9 +82,8 @@ for t = 1:sim_time
     de(t) = sqrt((xr(t) - x(t))^2 + (yr(t) - y(t))^2);
     % compute the angle error
     thetae(t) = thetar(t) - theta(t);
-    
-    % fire rules 
-    
+   
+    % fire rules in the inference engine    
     % if de is small and abs(thetae) is small then 
     % u(t,i) = [k_d(i)*de(t) + k_t(i)*thetae(t); k_d(i)*de(t) - k_t(i)*thetae(t)];
     w(t, 1) = min([compute_membership(de(t),'f11'), ...
@@ -95,15 +105,15 @@ for t = 1:sim_time
                  compute_membership(abs(thetae(t)),'f22')]);
     u(:, t, 4) = [k_d(4)*de(t) + k_t(4)*thetae(t); k_d(4)*de(t) - k_t(4)*thetae(t)];
     
-    
     % compute output of the fuzzy controller that will be sent to the robot
     for idx = 1:num_rules
         u_fin(:, t) = u_fin(:, t) + w(t, idx)*u(:, t, idx);
         w_fin(t) = w_fin(t) + w(t, idx);
     end
+    
     % weighted average
     u_fin(:, t) = u_fin(:, t)/w_fin(t);
-    u_fin(:, t) = u_fin(:, t)/50;
+    u_fin(:, t) = u_fin(:,t);
     % weighted sum - more effective 
     % u_fin(command_size, t) = u_fin(command_size, t);
     
@@ -115,12 +125,51 @@ for t = 1:sim_time
     theta(t+1) = theta(t) + wr(t);
 end
 
-% visualization
-figure;
+%% Visualization 
+
+% get field handler
+field = generate_field(field_size);
+hold all;
+
+% inactive robots on the field
+red_team_inactive1_x = 75;
+red_team_inactive1_y = 225;
+black_team_inactive1_x = 225;
+black_team_inactive1_y = 225;
+black_team_inactive2_x = 225;
+black_team_inactive2_y = 75;
+robot_size = D*100; % in cm 
+% draw inactive robots
+rectangle('Position', [red_team_inactive1_x,   red_team_inactive1_y, robot_size, robot_size],...
+          'FaceColor','r',...
+          'LineWidth',3); hold on;
+rectangle('Position', [black_team_inactive1_x, black_team_inactive1_y, robot_size, robot_size],...
+          'FaceColor','k',...
+          'LineWidth',3); hold on;
+rectangle('Position', [black_team_inactive2_x, black_team_inactive2_y, robot_size, robot_size],...
+          'FaceColor','k',...
+          'LineWidth',3); hold on;
+
+% draw active robot in the intial position 
+rectangle('Position', [xr(1)-robot_size, yr(1)-robot_size, robot_size, robot_size],...
+          'FaceColor','r',...
+          'LineStyle','--',...
+          'LineWidth',3); hold on;
+      
+% draw active robot in final position
+rectangle('Position', [x(end), y(end), robot_size, robot_size],...
+          'FaceColor','r',...
+          'LineWidth',3); hold on;
+
+% plot reference trajectory 
+% TODO add errors manifold overlayed on reference trajectory
+plot(xr, yr, 'r');
+hold on;
+ 
+% plot active robot movement to final position
 for t = 1:sim_time
-    plot(xr(t), yr(t), '.r');
+    plot(x(t), y(t), '*b');
     hold on;
-    plot(x(t), y(t), 'b');
-    hold on;
-    grid on;
 end
+grid on;
+legend('WMR Reference trajectory (red)', 'WMR Real trajectory (blue)');
