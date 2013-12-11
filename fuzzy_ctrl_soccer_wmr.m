@@ -103,16 +103,16 @@ for t = 1:sim_time
     end
     % weighted average
     u_fin(:, t) = u_fin(:, t)/w_fin(t);
-    u_fin(:, t) = u_fin(:, t)/100;
+    u_fin(:, t) = u_fin(:, t)/50;
     % weighted sum - more effective 
     % u_fin(command_size, t) = u_fin(command_size, t);
     
     % send the command to the robot 
     vr(t) = (u_fin(1,t) + u_fin(2, t))/2;
-    wr(t) = (u_fin(1,t) - u_fin(2, t))/2;
+    wr(t) = (u_fin(1,t) - u_fin(2, t))/D;
     x(t+1) = x(t) + vr(t)*cos(theta(t));
     y(t+1) = y(t) + vr(t)*sin(theta(t));
-    theta(t+1) = theta(t) + (u_fin(1,t) - u_fin(2, t))/D;
+    theta(t+1) = theta(t) + wr(t);
 end
 
 % visualization
