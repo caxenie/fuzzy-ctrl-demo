@@ -10,7 +10,7 @@ clear all; close all; clc;
 % type of trajectory to track
 % types of trajectories 
 % {line, circle, sine, line_half_loop, complex1, complex2}
-tp = 'sine';
+tp = 'circle';
 % field size size x size
 field_size = 300;
 
@@ -173,3 +173,17 @@ for t = 1:sim_time
 end
 grid on;
 legend('WMR Reference trajectory (red)', 'WMR Real trajectory (blue)');
+
+% figure for quantitative analysis
+figure;
+for t = 1:sim_time
+    plot(xr(t), yr(t), '.r'); hold on;
+    plot(x(t), y(t), '*b'); hold on;
+end
+grid on;
+set(gcf,'Color','w');
+set(gca, 'Box', 'off'); 
+text_offset = 5;
+text(xr(1)-text_offset, yr(1)-text_offset, 'Start');
+text(x(end)-text_offset, y(end)-text_offset, 'Stop');
+legend('Reference trajectory', 'Robot trajectory');
