@@ -95,10 +95,10 @@ double compute_membership(fuzzy_in* in)
 		case test:
 			switch(in->membership_func){
 				case smalld:
-					out = min(max(0, -(in->crisp_val-60)/120), 1);
+					out = min(max(0, -(in->crisp_val-80)/120), 1);
 				break;
 				case larged:
-					out = 1 - min(max(0, -(in->crisp_val-60)/160), 1);
+					out = 1 - min(max(0, -(in->crisp_val-80)/160), 1);
 				break;
 				case smallt:
 					out = (-abs(in->crisp_val)+180)/180;
@@ -115,10 +115,10 @@ double compute_membership(fuzzy_in* in)
 					Large MF -> a = 0, b = 60, c = 120
 			*/
 			case smalld:
-				        a = -60, b = 0, c = 60;
+				        a = -80, b = 0, c = 80;
 			break;
 			case larged:
-				         a = 0, b = 60, c = 120;
+				         a = 0, b = 80, c = 160;
 			break;
 			/* for heading angle error 
 			   used params: Small MF -> a = -180, b = 0, c = 180
@@ -143,10 +143,10 @@ double compute_membership(fuzzy_in* in)
 					Large MF -> a = 0, b = 50, c = 69.2, d = 85.2
 			*/
 			case smalld:
-				         a = -20.2, b = -1.04, c = 10, d = 60;
+				         a = -20.2, b = -1.04, c = 10, d = 80;
 			break;
 			case larged:
-				         a = 0, b = 50, c = 69.2, d = 85.2;
+				         a = 0, b = 70, c = 69.2, d = 85.2;
 			break;
 			/* for heading angle error 
 			   used params: Small MF -> a = -60.6, b = -3.12, c = 5, d = 180
@@ -157,7 +157,7 @@ double compute_membership(fuzzy_in* in)
 			
 			break;	
 			case larget:
-					 a = 0, b = 60, c = 208, d = 256;
+					 a = 0, b = 80, c = 208, d = 256;
 			
 			break;	
 			}
@@ -173,7 +173,7 @@ double compute_membership(fuzzy_in* in)
 				        sigma = 25, mean = 0;
 			break;
 			case larged:
-				         sigma = 25, mean = 60;
+				         sigma = 25, mean = 80;
 			break;
 			/* for heading angle error 
 			   used params: Small MF -> sigma = 60  mean = 0
@@ -220,8 +220,8 @@ int main(int argc, char** argv)
 	fuzzy_in *thetae = (fuzzy_in*)calloc(1, sizeof(fuzzy_in));
 	
 	/* set the type of the membership function for each input */
-	de->membership_type = gauss;
-	thetae->membership_type = gauss;
+	de->membership_type 	= test;
+	thetae->membership_type = test;
 
 	/* robot params */
 	double robot_lin_vel = 0.0f;
