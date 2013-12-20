@@ -37,9 +37,9 @@ switch ttype
         
         % line half loop
     case 'line_half_loop';
-        xxx   = [50, 100, 125, 100];
-        yyy   = [50, 50, 75, 100];
-        teta  = [0, 0, pi/2, pi];
+        xxx   = [50, 100, 125, 110 70];
+        yyy   = [50, 50, 75, 100 100 ];
+        teta  = [0, 0, pi/2, pi pi ];
 end
 P = [xxx;yyy];
 
