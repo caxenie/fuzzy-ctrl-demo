@@ -267,14 +267,15 @@ save(sprintf('reference_trajectory_data_%s.mat', ttype), 'ref_traj');
 % dlmwrite('xytheta_desired.txt',KKK,'coffset',1);
 fid = fopen(sprintf('reference_profile_%s.h', ttype),'wt');
 
-fprintf(fid,'double len=%d; \n',length(KKK));
-fprintf(fid,'static double reference_trajectory[][3]={ \n');
+%% ONLY IF HEADER IS SEPARATE
+%fprintf(fid,'double len=%d; \n',length(KKK));
+%fprintf(fid,'static double reference_trajectory[][3]={ \n');
 
 for h=1:length(KKK)
-    fprintf(fid,'%2.8f, %2.8f, %2.8f\n', KKK(h, 1), KKK(h, 2), KKK(h,3));
+    fprintf(fid,'%2.8f,%2.8f,%2.8f\n', KKK(h, 1), KKK(h, 2), KKK(h,3));
 end
 
-fprintf(fid,'};\n');
+%fprintf(fid,'};\n');
 
 fclose(fid);
 
