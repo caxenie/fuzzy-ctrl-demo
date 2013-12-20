@@ -45,7 +45,8 @@ enum
 typedef struct 
 {
 	double crisp_val;	/* crisp value */
-	int membership_func;	/* type of membership function */
+	int membership_type;	/* type of membership function */
+	int membership_func;    /* the specific function Small, Large ... */
 }fuzzy_in;
 
 typedef struct
@@ -83,39 +84,111 @@ double compute_aggregation(int type, double memb_val_in1, double memb_val_in2)
 }
 
 /* compute the membership vf for a crisp input */
-double compute_membership(int type, fuzzy_in* in)
+double compute_membership(fuzzy_in* in)
 {
+	double a, b, c, d, sigma, mean;
 	double out = 0.0f;
-	/* cherck the type of the membership */
+	int type = in->membership_type;
+
+	/* check the type of the membership */
 	switch(type){
-		case 0:
+		case test:
 			switch(in->membership_func){
-				case 11:
-					out = min(max(0, -(in->crisp_val-80)/160), 1);
+				case smalld:
+					out = min(max(0, -(in->crisp_val-60)/120), 1);
 				break;
-				case 12:
-					out = 1 - min(max(0, -(in->crisp_val-80)/160), 1);
+				case larged:
+					out = 1 - min(max(0, -(in->crisp_val-60)/160), 1);
 				break;
-				case 21:
+				case smallt:
 					out = (-abs(in->crisp_val)+180)/180;
 				break;
-				case 22:
+				case larget:
 					out = 1 -  (-abs(in->crisp_val)+180)/180;
 				break;
 			}
 		break;
-		case 1:
+		case triangle:
+		   switch(in->membership_func){
+			/* for distance error 
+			   used params: Small MF -> a = -60, b = 0, c = 60
+					Large MF -> a = 0, b = 60, c = 120
+			*/
+			case smalld:
+				        a = -60, b = 0, c = 60;
+			break;
+			case larged:
+				         a = 0, b = 60, c = 120;
+			break;
+			/* for heading angle error 
+			   used params: Small MF -> a = -180, b = 0, c = 180
+					Large MF -> a = 0, b = 180, c = 360
+			*/
+			case smallt:
+					a = -180, b = 0, c = 180;
+			
+			break;	
+			case larget:
+					a = 0, b = 180, c = 360;
+			
+			break;	
+			}
+			out = max(min((in->crisp_val - a)/(b-a), (c - in->crisp_val)/(c - b)), 0);			
 	
 		break;
-
-		case 2:
-
-
+		case trapezoid:
+		   switch(in->membership_func){
+			/* for distance error 
+			   used params: Small MF -> a = -20.2, b = -1.04, c = 10, d = 60
+					Large MF -> a = 0, b = 50, c = 69.2, d = 85.2
+			*/
+			case smalld:
+				         a = -20.2, b = -1.04, c = 10, d = 60;
+			break;
+			case larged:
+				         a = 0, b = 50, c = 69.2, d = 85.2;
+			break;
+			/* for heading angle error 
+			   used params: Small MF -> a = -60.6, b = -3.12, c = 5, d = 180
+					Large MF -> a = 0, b = 60, c = 208, d = 256
+			*/
+			case smallt:
+					 a = -60.6, b = -3.12, c = 5, d = 180;
+			
+			break;	
+			case larget:
+					 a = 0, b = 60, c = 208, d = 256;
+			
+			break;	
+			}
+			out = max(min((in->crisp_val-a)/(b-a), min(1, (d-in->crisp_val)/(d-c))), 0);
 		break;
-
-
-		case 3:
-
+		case gauss:
+		    switch(in->membership_func){
+			/* for distance error 
+			   used params: Small MF -> sigma = 25  mean = 0 
+					Large MF -> sigma = 25  mean = 60
+			*/
+			case smalld:
+				        sigma = 25, mean = 0;
+			break;
+			case larged:
+				         sigma = 25, mean = 60;
+			break;
+			/* for heading angle error 
+			   used params: Small MF -> sigma = 60  mean = 0
+					Large MF -> sigma = 60  mean = 180
+			*/
+			case smallt:
+					 sigma = 60, mean = 0;
+			
+			break;	
+			case larget:
+					  sigma = 60, mean = 180;
+			
+			break;	
+			}
+			out = exp(-pow((in->crisp_val - mean),2)/(2*pow(sigma,2)));	
 		break;
 	}
 	return out; 
@@ -146,6 +219,10 @@ int main(int argc, char** argv)
 	fuzzy_in *de = (fuzzy_in*)calloc(1, sizeof(fuzzy_in));
 	fuzzy_in *thetae = (fuzzy_in*)calloc(1, sizeof(fuzzy_in));
 	
+	/* set the type of the membership function for each input */
+	de->membership_type = gauss;
+	thetae->membership_type = gauss;
+
 	/* robot params */
 	double robot_lin_vel = 0.0f;
 	double robot_rot_vel = 0.0f;	
@@ -177,10 +254,10 @@ int main(int argc, char** argv)
 		/* first rule */
 		de->membership_func = smalld;
 		thetae->membership_func = smallt;
-	
+			
 		w1 = compute_aggregation(min,
-					 compute_membership(test,de),
-					 compute_membership(test,thetae)
+					 compute_membership(de),
+					 compute_membership(thetae)
 					);
 		u1[1] = Kde[1]*(de->crisp_val) + Kte[1]*(thetae->crisp_val);
 		u1[2] = Kde[1]*(de->crisp_val) - Kte[1]*(thetae->crisp_val);
@@ -191,8 +268,8 @@ int main(int argc, char** argv)
 		thetae->membership_func = larget;
 	
 		w2 = compute_aggregation(min,
-					 compute_membership(test,de),
-					 compute_membership(test,thetae)
+					 compute_membership(de),
+					 compute_membership(thetae)
 					);
 		u2[1] = Kde[2]*de->crisp_val + Kte[2]*thetae->crisp_val;
 		u2[2] = Kde[2]*de->crisp_val - Kte[2]*thetae->crisp_val;
@@ -203,8 +280,8 @@ int main(int argc, char** argv)
 		thetae->membership_func = smallt;
 	
 		w3 = compute_aggregation(min,
-					 compute_membership(test,de),
-					 compute_membership(test,thetae)
+					 compute_membership(de),
+					 compute_membership(thetae)
 					);
 		u3[1] = Kde[3]*de->crisp_val + Kte[3]*thetae->crisp_val;
 		u3[2] = Kde[3]*de->crisp_val - Kte[3]*thetae->crisp_val;
@@ -215,8 +292,8 @@ int main(int argc, char** argv)
 		thetae->membership_func = larget;
 	
 		w4 = compute_aggregation(min,
-					 compute_membership(test,de),
-					 compute_membership(test,thetae)
+					 compute_membership(de),
+					 compute_membership(thetae)
 					);
 		u4[1] = Kde[4]*de->crisp_val + Kte[4]*thetae->crisp_val;
 		u4[2] = Kde[4]*de->crisp_val - Kte[4]*thetae->crisp_val;
