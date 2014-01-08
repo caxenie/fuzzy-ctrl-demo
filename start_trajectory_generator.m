@@ -40,6 +40,18 @@ switch ttype
         xxx   = [50, 100, 125, 110 70];
         yyy   = [50, 50, 75, 100 100 ];
         teta  = [0, 0, pi/2, pi pi ];
+
+        % stairs profile
+    case 'stairs'
+        xxx   = [4 20 40 60 80 100 120 140 160 180 200 220 240 260];
+        yyy   = [4 20 40 40 40 60  80  80  80  100 120 120 120 120];
+        teta  = [0, pi/2 0 0 0 pi/2 0 0 0 pi/2 0 0 0 0];
+        
+        % side-switch
+    case 'center_switch'
+        xxx   = [4 20 40 60 40 20   40  60  80 100 120 140 160];
+        yyy   = [4 20 40 60 80 100 120 120 120 120 120 120 120];
+        teta  = [0 pi/2 0 pi/2 pi pi/2 0 0 0 0 0 0 0];
 end
 P = [xxx;yyy];
 

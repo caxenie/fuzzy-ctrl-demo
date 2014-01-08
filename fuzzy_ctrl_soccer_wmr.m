@@ -9,8 +9,8 @@ clear all; close all; clc;
 
 % type of trajectory to track
 % types of trajectories 
-% {line, circle, sine, line_half_loop, complex1, complex2}
-tp = 'circle';
+% {line, circle, sine, line_half_loop, complex1, complex2, stairs, center_switch}
+tp = 'center_switch';
 % field size size x size
 field_size = 300;
 
