@@ -322,7 +322,7 @@ int main(int argc, char** argv)
 
 	FILE *fout = fopen("output.log","w");
 	for(int i = 0;i<input_idx;i++){
-		fprintf(fin, "%lf,%lf,%lf\n", robot_trajectory[i].x_pos, robot_trajectory[i].y_pos, robot_trajectory[i].theta);
+		fprintf(fout, "%lf,%lf,%lf\n", robot_trajectory[i].x_pos, robot_trajectory[i].y_pos, robot_trajectory[i].theta);
 	}
 	fclose(fout);
 
