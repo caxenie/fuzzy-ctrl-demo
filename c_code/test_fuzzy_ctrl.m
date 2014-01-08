@@ -6,7 +6,6 @@ out = load('output.log');
 figure;
 set(gcf, 'color', 'w');
 plot(in(:,1), in(:,2), '.r'); hold on;
-plot(out(:,1), out(:,2), '-b'); grid on;
+plot(out(:,1), out(:,2), '.b'); grid on;
 legend('Reference trajectory','Robot trajectory');
 title('Fuzzy Controller for WMR Trajectory Tracking Analysis');
-

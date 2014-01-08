@@ -220,7 +220,7 @@ int main(int argc, char** argv)
 	fuzzy_in *thetae = (fuzzy_in*)calloc(1, sizeof(fuzzy_in));
 	
 	/* set the type of the membership function for each input */
-	de->membership_type 	= test;
+	de->membership_type 	= test;	
 	thetae->membership_type = test;
 
 	/* robot params */
