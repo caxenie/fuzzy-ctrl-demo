@@ -29,7 +29,7 @@
 /* specify the type of aggregator */
 enum 
 {
-	min = 1,
+	minim = 1,
 	prod
 };
 
@@ -80,7 +80,7 @@ double compute_thetae(trajectory ref, trajectory cur)
 /* aggregate the antecedents and compute the weight (membership degree) */
 double compute_aggregation(int type, double memb_val_in1, double memb_val_in2)
 {
-	return (type==min)?min(memb_val_in1, memb_val_in2):(memb_val_in1*memb_val_in2);
+	return (type==minim)?min(memb_val_in1, memb_val_in2):(memb_val_in1*memb_val_in2);
 }
 
 /* compute the membership vf for a crisp input */
@@ -255,7 +255,7 @@ int main(int argc, char** argv)
 		de->membership_func = smalld;
 		thetae->membership_func = smallt;
 			
-		w1 = compute_aggregation(min,
+		w1 = compute_aggregation(minim,
 					 compute_membership(de),
 					 compute_membership(thetae)
 					);
@@ -267,7 +267,7 @@ int main(int argc, char** argv)
 		de->membership_func = smalld;
 		thetae->membership_func = larget;
 	
-		w2 = compute_aggregation(min,
+		w2 = compute_aggregation(minim,
 					 compute_membership(de),
 					 compute_membership(thetae)
 					);
@@ -279,7 +279,7 @@ int main(int argc, char** argv)
 		de->membership_func = larged;
 		thetae->membership_func = smallt;
 	
-		w3 = compute_aggregation(min,
+		w3 = compute_aggregation(minim,
 					 compute_membership(de),
 					 compute_membership(thetae)
 					);
@@ -291,7 +291,7 @@ int main(int argc, char** argv)
 		de->membership_func = larged;
 		thetae->membership_func = larget;
 	
-		w4 = compute_aggregation(min,
+		w4 = compute_aggregation(minim,
 					 compute_membership(de),
 					 compute_membership(thetae)
 					);
@@ -326,6 +326,10 @@ int main(int argc, char** argv)
 	}
 	fclose(fout);
 
-
+	/* unified ref and current pose dataset for homework input */
+	FILE *dataset = fopen("reference_data.log", "w");
+	for(int i = 0; i<input_idx; i++)
+		fprintf(dataset,  "%lf,%lf,%lf,%lf,%lf,%lf\n", ref_trajectory[i].x_pos, ref_trajectory[i].y_pos, ref_trajectory[i].theta,
+						   		robot_trajectory[i].x_pos, robot_trajectory[i].y_pos, robot_trajectory[i].theta);
 	return (EXIT_SUCCESS);
 }
