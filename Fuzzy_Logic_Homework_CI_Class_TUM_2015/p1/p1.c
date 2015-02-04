@@ -105,10 +105,10 @@ int main(int argc, char** argv)
 		if(++input_idx == MAX_TRAJ_SIZE) break;
 	}
 	/* main control loop simulation */
-	for(int t = 1; t<input_idx; ++t){
+	for(int t = 0; t<input_idx; ++t){
 		/* the 2 inputs in the fuzzy controller are the 2 error values */
-		de->crisp_val = compute_de(ref_trajectory[t-1], robot_trajectory[t-1]);
-		thetae->crisp_val = compute_thetae(ref_trajectory[t-1], robot_trajectory[t-1]);
+		de->crisp_val = compute_de(ref_trajectory[t], robot_trajectory[t]);
+		thetae->crisp_val = compute_thetae(ref_trajectory[t], robot_trajectory[t]);
 		
 		de->membership_func = smalld;
 		thetae->membership_func = smallt;
