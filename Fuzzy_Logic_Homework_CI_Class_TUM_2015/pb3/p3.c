@@ -130,10 +130,10 @@ int main(int argc, char** argv)
 	robot_trajectory[0].theta = ref_trajectory[0].theta;
 
 	/* main control loop simulation */
-	for(int t = 0; t<input_idx; ++t){
+	for(int t = 1; t<=input_idx; ++t){
 		/* the 2 inputs in the fuzzy controller are the 2 error values */
-		de->crisp_val = compute_de(ref_trajectory[t], robot_trajectory[t]);
-		thetae->crisp_val = compute_thetae(ref_trajectory[t], robot_trajectory[t]);
+		de->crisp_val = compute_de(ref_trajectory[t-1], robot_trajectory[t-1]);
+		thetae->crisp_val = compute_thetae(ref_trajectory[t-1], robot_trajectory[t-1]);
 		
 		/* fire the rules */
 		
@@ -198,10 +198,7 @@ int main(int argc, char** argv)
 		robot_trajectory[t].theta = robot_trajectory[t-1].theta + 
 					    robot_rot_vel;
 	
-	}
-
-	for(int i = 0;i<input_idx;i++){
-		printf("%lf,%lf,%lf\n", robot_trajectory[i].x_pos, robot_trajectory[i].y_pos, robot_trajectory[i].theta);
+		printf("%lf,%lf,%lf\n", robot_trajectory[t].x_pos, robot_trajectory[t].y_pos, robot_trajectory[t].theta);
 	}
 
 	/* free resources */
@@ -217,3 +214,4 @@ int main(int argc, char** argv)
 
 	return (EXIT_SUCCESS);
 }
+

@@ -2,17 +2,17 @@
 
 # Computational Intelligence Class
 
-# Validator for Fuzzy Inference Systems
+# Validator for Fuzzy Inference Systems - Problem 41
 # Fuzzy logic controller for trajectory tracking
-# 	input 3 values (x_ref, y_ref, theta_ref)
-#	output 3 values (x_meas, y_meas, theta_meas)
+# 	input 6 values (x_ref, y_ref, theta_ref, x_meas, y_meas, theta_meas)
+#	output 4 values (miu1, miu2, miu3, miu4)
 
 # ******************************************************************************************************
 # global variables
 globalError=0;
-toleratedGlobalError=20; # percentage of offset on the overall trajectory
-toleratedPointError=5;   # cm / degrees
-noutputs=3;
+toleratedGlobalError=5;    # percentage of offset on the overall trajectory
+toleratedPointError=0.01;  # error per each output
+noutputs=4;
 # ******************************************************************************************************
 # function that reads two files and checks the output
 validate_output() {
@@ -36,7 +36,10 @@ validate_output() {
     # remember a return value
     local errorVal=0;
 
-    echo "      user output                    desired output                  difference                       STATUS"
+    # erroneous line
+    local errLine=1;
+	
+    echo "	user output				desired output				difference			line_number		STATUS"
 
     # while we haven't reached EOF of the files
     while ([ $eof1 -eq 0 ] || [ $eof2 -eq 0 ]);
@@ -45,6 +48,7 @@ validate_output() {
         # reinit values to 0
 	data1=0;
 	data2=0;
+	diffg="";
 
         # read line by line from each files
         if ! read data1 <&$FD1; then
@@ -75,30 +79,41 @@ validate_output() {
 		# check if we have a valid number
 		if [ "`echo "$data1a" | grep "nan"`" != "" ]; then
             		echo "$data1a  $data2a  --- program output is not a number"
-            		errorVal=3;
+            		errorVal=2;
 		else
 			# compute the difference between two values
 			cmd='{ printf( "%6.6f\n", $1-$2) }';
-			data1a=${data1a#-};
-			data2a=${data2a#-};
-			diffA=`echo $data1a $data2a| awk "$cmd"`;
-			diffA=${diffA#-};	
+			diffA=`echo $data1a $data2a | awk "$cmd"`;
+	                diffA=${diffA#-};
+			# combine in global diff (all outputs)
+			diffg+=$diffA;
+			if [ $colidx != $noutputs ]; then 
+				diffg+=",";
+			fi
 
-            		if [ $(echo "$diffA <= $toleratedPointError" | bc) -eq 1 ]; then
-                		echo "      $data1a                        $data2a                        $diffA                        OK";
-            		else
-               			echo "      $data1a                        $data2a                        $diffA                        XXX";
-				globalError=$((globalError+1));
-                		errorVal=4;
-            		fi
 		fi
 	done # end loop for each column
+
+		# check global status (for all outputs)
+		fails=0;
+            	# loop for each column in the output file
+		for colidx in `seq 1 $noutputs`; do	
+			diffe=`echo $diffg | cut -f$colidx -d',' | awk "$cmd"`;
+			if [ $(echo "$diffe > $toleratedPointError" | bc) -eq 1 ]; then
+				fails=$((fails+1));
+			fi
+		done # end loop for each column
+		if [ $fails != 0 ]; then
+               			echo "$data1	$data2	$diffg		$errLine		XXX";
+				globalError=$((globalError+1));
+                		errorVal=2;
+            	fi
+	# increment line counter
+	errLine=$((errLine+1));
     done
 }
 
 # ******************************************************************************************************
-echo ""
-
 # determine length of files
 progOutCount="`wc -l "$2" | cut -f1 -d' '`";
 sampleCount="`wc -l "$3" | cut -f1 -d' '`";
@@ -112,22 +127,19 @@ then
   exit 2;
 fi;
 
-echo "";
-echo "(constant) toleratedPointError:  $toleratedPointError";
-echo "";
-
 # compute the squared errors
 validate_output $2 $3
 errorVal=$?;			# remember error indicator
 
 # check global errror after reading the input files
+echo "";
 cmd='{ printf( "%6.6f\n", $1*100/$2) }';
 globalError=`echo $globalError $sampleCount | awk "$cmd"`;
 if [ $(echo "$globalError <= $toleratedGlobalError" | bc) -eq 1 ]; then
-    echo "totalError:      $globalError 	OK"
+    echo "totalError:$globalError %	toleratedError:$toleratedGlobalError %	OK"
 else
-    echo "totalError:      $globalError 	XXX"
-    errorVal=5;
+    echo "totalError:$globalError %	toleratedError:$toleratedGlobalError %	XXX"
+    errorVal=2;
 fi
 
 exit $errorVal;
