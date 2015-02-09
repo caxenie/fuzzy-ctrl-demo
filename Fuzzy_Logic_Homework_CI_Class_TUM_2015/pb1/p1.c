@@ -57,16 +57,16 @@ double compute_membership(fuzzy_in* in)
 	double out = 0.0f;
 		switch(in->membership_func){
 			case smalld:
-				out = (double)(min(max(0, -(in->crisp_val-80)/160), 1));
+				out = (double)(min(max(0, -(in->crisp_val-80.0)/160.0), 1.0));
 			break;
 			case larged:
-				out = (double)(1 - min(max(0, -(in->crisp_val-80)/160), 1));
+				out = (double)(1 - min(max(0, -(in->crisp_val-80.0)/160.0), 1.0));
 			break;
 			case smallt:
-				out = (double)((-abs(in->crisp_val)+180)/180);
+				out = (double)((-fabs(in->crisp_val)+180.0)/180.0);
 			break;
 			case larget:
-				out = (double)(1 -  (-abs(in->crisp_val)+180)/180);
+				out = (double)(1.0 -  (-(fabs(in->crisp_val))+180.0)/180.0);	
 			break;
 		}
 	return out; 
@@ -101,11 +101,12 @@ int main(int argc, char** argv)
 						 &(robot_trajectory[input_idx].x_pos),
 						 &(robot_trajectory[input_idx].y_pos),  
 						 &(robot_trajectory[input_idx].theta))!=EOF){
+		input_idx++;
 		/* check if max size was reached */
-		if(++input_idx == MAX_TRAJ_SIZE) break;
+		if(input_idx == MAX_TRAJ_SIZE) break;
 	}
 	/* main control loop simulation */
-	for(int t = 0; t<input_idx; ++t){
+	for(int t = 0; t<input_idx; t++){
 		/* the 2 inputs in the fuzzy controller are the 2 error values */
 		de->crisp_val = compute_de(ref_trajectory[t], robot_trajectory[t]);
 		thetae->crisp_val = compute_thetae(ref_trajectory[t], robot_trajectory[t]);

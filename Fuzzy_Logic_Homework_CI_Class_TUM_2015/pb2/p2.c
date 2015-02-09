@@ -64,21 +64,20 @@ double compute_aggregation(double memb_val_in1, double memb_val_in2)
 double compute_membership(fuzzy_in* in)
 {
 	double out = 0.0f;
-
-			switch(in->membership_func){
-				case smalld:
-					out = min(max(0, -(in->crisp_val-80)/160), 1);
-				break;
-				case larged:
-					out = 1 - min(max(0, -(in->crisp_val-80)/160), 1);
-				break;
-				case smallt:
-					out = (-abs(in->crisp_val)+180)/180;
-				break;
-				case larget:
-					out = 1 -  (-abs(in->crisp_val)+180)/180;
-				break;
-			}
+		switch(in->membership_func){
+			case smalld:
+				out = (double)(min(max(0, -(in->crisp_val-80.0)/160.0), 1.0));
+			break;
+			case larged:
+				out = (double)(1 - min(max(0, -(in->crisp_val-80.0)/160.0), 1.0));
+			break;
+			case smallt:
+				out = (double)((-fabs(in->crisp_val)+180.0)/180.0);
+			break;
+			case larget:
+				out = (double)(1.0 -  (-(fabs(in->crisp_val))+180.0)/180.0);	
+			break;
+		}
 	return out; 
 }
 
